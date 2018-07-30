@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="http://apps.bdimg.com/libs/jquery/1.6.4/jquery.js"></script>
+    <title>登陆</title>
+    <style type="text/css" rel="stylesheet">
+        table{
+            position: absolute;
+            top: 50%;
+            left: 50%;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <table>
+        <tr>
+            <td colspan="2">
+        <label>账号</label>
+        <input type="text" id="account"/>
+            </td>
+            </tr>
+        <tr>
+            <td colspan="2">
+        <label>密码</label>
+        <input type="password" id="password"/>
+            </td>
+        </tr>
+        <tr>
+            <td><input type="button" value="登陆" onclick="login()"/</td>
+            <td><input type="button" value="注册"/></td>
+        </tr>
+    </table>
+</div>
+</body>
+<script>
+    $.ajaxSetup({
+              data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+            });
+    function login() {
+        if ($('#account').val().length == 0){
+            alert('请输入账号！');
+            $('#account').focus();
+            return;
+        }
+        if($('#password').val().length == 0){
+            alert('请输入密码！');
+            $('#password').focus();
+            return;
+        }
+        $.ajax(
+                {
+                    url:"{% url 'DataExcel:loginValidate' %}",
+                    type:'POST',
+                    data:{"account":$('#account').val(), "password":$('#password').val()},
+                    success:function (data) {
+                        if (data == '1'){
+                            sessionStorage.setItem('account', $('#account').val());
+                            window.location.href = "{% url 'DataExcel:index' %}";
+                        }
+                        else {
+                            alert('登陆失败！');
+                        }
+                    }
+                })
+    }
+</script>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    {% load static %}
+    <script type="text/javascript" src="http://apps.bdimg.com/libs/jquery/1.6.4/jquery.js"></script>
+    <link type="text/css" rel="stylesheet" href="{% static 'assets/css/upload.css'%}">
+</head>
+<body>
+    <form method="post" enctype="multipart/form-data" action="{% url 'DataExcel:upload' %}" id="upload">
+    <a href="javascript:void(0)" onclick="downloadFile()" id="fileName">{{ context }}</a>
+        <br>
+        <label>模板日期</label>
+    <input type="month" id="dateinput" name="dateinput" value="2018-07"/>
+    <input type="hidden" value="" id="orignalFileName" name="orignalFileName">
+    <input type="hidden" value="" id="account" name="account"/>
+        <input type="hidden" name="typeSelect" id="typeSelect"/>
+        <br>
+    <input type="file" name="excel" onchange="FileValidate()" id="excel"/>
+    <input type="submit" value="上传" id="upload"/>
+        <div id="record">
+        </div>
+    </form>
+    <script  type="text/javascript">
+            $.ajaxSetup({
+              data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+            });
+            $('#account').val(sessionStorage.getItem('account'));
+            $('#typeSelect').val(sessionStorage.getItem('type'));
+            function FileValidate() {
+                var fileData = new FormData();
+                file = $('#excel')[0].files[0];
+                fileData.append('excel', file);
+
+                $.ajax(
+                    {
+                        url:"{% url 'DataExcel:validate' %}",
+                        type:'POST',
+                        data:fileData,
+                        processData:false,
+                        contentType:false,
+                        success:function (data) {
+                                data = JSON.parse(data);
+                                if (data['isValidate'] == false){
+                                    alert('请上传Excel文件！');
+                                    $('#excel')[0].value = null;
+                                }
+                                else{
+                                    $('#fileName')[0].innerText = data['context'];
+                                    $('#orignalFileName')[0].value = data['fileName'];
+                                }
+                            }
+                        })
+                    }
+
+            $('#record').innerHTML = "";
+            $.ajax(
+                {
+                    url:"{% url 'DataExcel:selectRecord' %}",
+                    type:'POST',
+                    data:{"account":$('#account').val(), "type":sessionStorage.getItem('type')},
+                    success:function (data) {
+                        var datajson = JSON.parse(data);
+                        if (datajson.length > 0){
+                            var html = "<br><table><tr border=1><td>导入人</td><td>导入时间</td><td>导入名称</td><td>模板年份</td><td>模板月份</td></tr>";
+                            for(var i = 0; i < datajson.length; i++) {
+                                html += "<tr border=1><td width='20%'>" + datajson[i].fields.import_by +"</td><td>" + datajson[i].fields.import_date
+                                    + "</td><td>" + datajson[i].fields.import_name + "</td><td>" + datajson[i].fields.import_year
+                                    + "</td><td>" + datajson[i].fields.import_month
+                                    + "</td></tr>";
+                            }
+                            html += "</table>";
+                            $('#record').html("<br>" + html);
+                        }else{
+                            $('#record').empty();
+                        }
+
+                    }
+                })
+
+            function downloadFile() {
+
+
+
+            }
+    </script>
+</body>
+</html>

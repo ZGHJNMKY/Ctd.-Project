@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>数据导入平台</title>
+    <script type="text/javascript" src="http://apps.bdimg.com/libs/jquery/1.6.4/jquery.js"></script>
+</head>
+<body>
+    <table width="100%">
+        <tr height="100%" valign="top">
+            <td id="leftNavi" width="20%"></td>
+            <td id="index" width="80%"></td>
+        </tr>
+    </table>
+
+</body>
+</html>
+<script>
+    $.ajaxSetup({
+                  data: {csrfmiddlewaretoken: '{{ csrf_token }}' },
+                });
+    $.ajax(
+            {
+                url:"{% url 'DataExcel:navigate' %}",
+                type:'POST',
+                data:{"account":sessionStorage.getItem('account')},
+                success:function (data) {
+                        data = JSON.parse(data);
+                        var html = "";
+                        if(data.length > 0){
+                            html += "<ul>";
+                            for (var i = 0; i < data.length; i++){
+                                html += "<li value=" + data[i].fields.authority_type
+                                    + "><a href='javascript:void(0)' target=main onclick=loadPage(this)>" + data[i].fields.authority_name
+                                    + "</a></li>";
+                            }
+                            html += "</ul>";
+
+                            $('#leftNavi').html(html);
+                        }else{
+                            alert('该用户未开通权限！');
+                        }
+                    }
+                })
+
+    function loadPage(param){
+        var html = "";
+        sessionStorage.setItem('type', param.parentNode.value);
+        html += "<iframe src='{% url "DataExcel:homePage" %}' height='400px'  frameborder=\"0\" width='100%'></iframe>";
+        $('#index').html(html);
+    }
+</script>
