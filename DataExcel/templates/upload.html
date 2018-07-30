@@ -20,6 +20,13 @@
     <input type="submit" value="上传" id="upload"/>
         <div id="record">
         </div>
+        <div>
+            <input type="hidden" id="page" value="1">
+            <ul style="float: left">
+                <li><a href="#" >上一页</a></li>
+                <li><a href="#" >下一页</a></li>
+            </ul>
+        </div>
     </form>
     <script  type="text/javascript">
             $.ajaxSetup({
@@ -61,7 +68,7 @@
                     data:{"account":$('#account').val(), "type":sessionStorage.getItem('type')},
                     success:function (data) {
                         var datajson = JSON.parse(data);
-                        if (datajson.length > 0){
+                        if (datajson.length > 0 && datajson.length <= 5){
                             var html = "<br><table><tr border=1><td>导入人</td><td>导入时间</td><td>导入名称</td><td>模板年份</td><td>模板月份</td></tr>";
                             for(var i = 0; i < datajson.length; i++) {
                                 html += "<tr border=1><td width='20%'>" + datajson[i].fields.import_by +"</td><td>" + datajson[i].fields.import_date
@@ -71,12 +78,36 @@
                             }
                             html += "</table>";
                             $('#record').html("<br>" + html);
+
+                        }else if(datajson.length > 5) {
+                            var html = "<br><table><tr border=1><td>导入人</td><td>导入时间</td><td>导入名称</td><td>模板年份</td><td>模板月份</td></tr>";
+                            for(var i = 0; i < 5; i++) {
+                                html += "<tr border=1><td width='20%'>" + datajson[i].fields.import_by +"</td><td>" + datajson[i].fields.import_date
+                                    + "</td><td>" + datajson[i].fields.import_name + "</td><td>" + datajson[i].fields.import_year
+                                    + "</td><td>" + datajson[i].fields.import_month
+                                    + "</td></tr>";
+                            }
+                            html += "</table>";
+                            $('#record').html("<br>" + html);
+                            loadPage(data);
                         }else{
                             $('#record').empty();
                         }
 
                     }
                 })
+
+            function loadPage(data) {
+                alert(data);
+                $.ajax({
+                    url:"{% url 'DataExcel:page' %}",
+                    type:'POST',
+                    data:{"page":$('#page').val(), "recordlist":data},
+                    success(data){
+
+                    }
+                })
+            }
 
             function downloadFile() {
 

@@ -14,6 +14,7 @@ from django.core import serializers
 logger = logging.getLogger(__name__)
 
 
+
 # Create your views here.
 def login(request):
     return render(request, 'login.html')
@@ -109,18 +110,26 @@ def selectRecord(request):
     if request.method == 'POST':
         account = request.POST.get("account")
         type = request.POST.get("type")
-        logger.error('account = ' + str(account) + 'type = ' + str(type))
         recordList = models.ImportRecord.objects.filter(import_by=account, import_type=type)
-        paginator = Paginator(recordList, 5)
-        page = request.POST.get('page', 1)
-        try:
-            logger.error(page)
-            recordList = paginator.page(page)
-        except PageNotAnInteger:
-            recordList = paginator.page(1)
-        except EmptyPage:
-            recordList = paginator.page(paginator.num_pages)
         recordList_json = serializers.serialize("json", recordList)
         logger.error(recordList_json)
     return HttpResponse((recordList_json))
+
+def page(request):
+    if request.method == 'POST':
+        page = request.POST.get('page',1)
+        recordList_json = request.POST.get('recordlist')
+        record = json.loads(recordList_json)
+        pagintor = Paginator(record, 5)
+        try:
+            logger.error(page)
+            record = pagintor.page(page)
+        except PageNotAnInteger:
+            record = pagintor.page(1)
+        except EmptyPage:
+            record = pagintor.page(pagintor.num_pages)
+        logger.error(record)
+        recordList_json = serializers.serialize("json", record)
+        return HttpResponse(recordList_json)
+
 

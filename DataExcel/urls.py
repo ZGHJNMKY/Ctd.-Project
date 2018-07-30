@@ -13,5 +13,6 @@ urlpatterns = [
     path('home/', views.home, name="home"),
     path('selectRecord/', views.selectRecord, name="selectRecord"),
     path('navigate/', views.navi, name="navigate"),
-    path('homePage/', views.homePage, name="homePage")
+    path('homePage/', views.homePage, name="homePage"),
+    path('page/', views.page, name="page")
 ]
